@@ -2,14 +2,14 @@ name: deploy-app-on-s3
 
 on:
   pull_request:
-    branches: [development]
+    branches: [master]
     types: [closed]
 jobs:
   deploy:
     runs-on: ubuntu-latest
     env:
-      AWS_S3_BUCKET_NAME: github-action-1233456sdflkga
-      AWS_CF_DISTRIBUTION_ID: E20F61L4LCPSIO
+      AWS_S3_BUCKET_NAME: your-bucket-name
+			AWS_CF_DISTRIBUTION_ID: your-cloudfront-id
     strategy:
       matrix:
         node-version: [10.x]
@@ -24,7 +24,7 @@ jobs:
       - name: Build Application
         run: npm run-script build
       - uses: jakejarvis/s3-sync-action@master
-        name: Upload App to Development Stage
+        name: Upload App to S3 Bucket
         with:
           args: --follow-symlinks --delete
         env:
@@ -33,7 +33,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: "eu-central-1"
           SOURCE_DIR: "dist"
-      - name: invalidate cloudfront cache
+      - name: Create CloudFront Cache Invalidation
         uses: chetan/invalidate-cloudfront-action@master
         env:
           DISTRIBUTION: ${{ env.AWS_CF_DISTRIBUTION_ID }}
