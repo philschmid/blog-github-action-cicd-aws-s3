@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       AWS_S3_BUCKET_NAME: github-action-1233456sdflkga
-			AWS_CF_DISTRIBUTION_ID: E20F61L4LCPSIO
+      AWS_CF_DISTRIBUTION_ID: E20F61L4LCPSIO
     strategy:
       matrix:
         node-version: [10.x]
