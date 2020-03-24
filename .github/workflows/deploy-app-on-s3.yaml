@@ -1,0 +1,43 @@
+name: deploy-app-on-s3
+
+on:
+  pull_request:
+    branches: [development]
+    types: [closed]
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      AWS_S3_BUCKET_NAME: github-action-1233456sdflkga
+			AWS_CF_DISTRIBUTION_ID: E20F61L4LCPSIO
+    strategy:
+      matrix:
+        node-version: [10.x]
+    steps:
+      - uses: actions/checkout@master
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Install Dependencies
+        run: npm install
+      - name: Build Application
+        run: npm run-script build
+      - uses: jakejarvis/s3-sync-action@master
+        name: Upload App to Development Stage
+        with:
+          args: --follow-symlinks --delete
+        env:
+          AWS_S3_BUCKET: ${{ env.AWS_S3_BUCKET_NAME }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: "eu-central-1"
+          SOURCE_DIR: "dist"
+      - name: invalidate cloudfront cache
+        uses: chetan/invalidate-cloudfront-action@master
+        env:
+          DISTRIBUTION: ${{ env.AWS_CF_DISTRIBUTION_ID }}
+          PATHS: "/*"
+          AWS_REGION: "eu-central-1"
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
